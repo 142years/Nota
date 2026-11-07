@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#F8F9FA" />
+<title>142Nota</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" />
+<link rel="stylesheet" href="css/style.css?v=1" />
+<link rel="stylesheet" href="css/receipt.css?v=1" />
+</head>
+<body>
+<a class="skip" href="#main">Lewati ke konten</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <span class="wordmark">142Nota</span>
+    <nav class="nav" aria-label="Menu utama">
+      <a href="#buat" data-route="buat">Buat Nota</a>
+      <a href="#riwayat" data-route="riwayat">Riwayat Nota</a>
+      <a href="#pengaturan" data-route="pengaturan">Pengaturan</a>
+    </nav>
+    <div class="topbar-status">
+      <span id="catStatus" class="status-text">Memuat katalog...</span>
+      <span id="storeStatus" class="status-text"></span>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="page" tabindex="-1">
+
+  <!-- Buat Nota -->
+  <section id="view-buat" class="view" aria-labelledby="h-buat" hidden>
+    <h1 id="h-buat" class="sr-only">Buat Nota</h1>
+    <div class="split">
+      <div class="stack">
+        <div class="card">
+          <div class="card-head"><h2>Data nota</h2><output id="f-no" class="mono muted"></output></div>
+          <div class="fields">
+            <div class="field">
+              <label for="f-sales">Sales</label>
+              <select id="f-sales"></select>
+              <p id="salesHint" class="hint" hidden>Belum ada sales aktif. <a href="#pengaturan">Tambah sales di Pengaturan</a>.</p>
+            </div>
+            <div class="field">
+              <label for="f-payment">Metode pembayaran</label>
+              <select id="f-payment"></select>
+            </div>
+            <div class="field">
+              <label for="f-cname">Pelanggan</label>
+              <input id="f-cname" type="text" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="f-cphone">No. HP pelanggan</label>
+              <input id="f-cphone" type="tel" inputmode="tel" autocomplete="off" />
+            </div>
+            <div class="field" id="dueField" hidden>
+              <label for="f-due">Jatuh tempo</label>
+              <input id="f-due" type="date" />
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>Katalog</h2>
+            <span id="catMeta" class="mono muted"></span>
+          </div>
+          <div class="search-row">
+            <label for="q" class="sr-only">Cari barang</label>
+            <input id="q" type="search" placeholder="Scan barcode, atau ketik nama, kode, SN" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" />
+            <button id="btnCustom" type="button" class="btn" aria-expanded="false" aria-controls="customBox">Item kustom</button>
+          </div>
+          <div id="customBox" class="custom-box" hidden>
+            <div class="field grow"><label for="c-desc">Nama barang</label><input id="c-desc" type="text" autocomplete="off" /></div>
+            <div class="field narrow"><label for="c-qty">Qty</label><input id="c-qty" type="number" min="1" step="1" value="1" /></div>
+            <div class="field"><label for="c-price">Harga satuan</label><input id="c-price" type="text" inputmode="numeric" value="0" /></div>
+            <button id="btnCustomAdd" type="button" class="btn primary">Tambah</button>
+          </div>
+          <div class="filter-row">
+            <div id="chips" class="chips" role="group" aria-label="Filter jenis barang"></div>
+            <label class="check"><input id="onlyReady" type="checkbox" /> Hanya stok ready</label>
+          </div>
+          <div id="catList" class="catlist" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <aside class="side" aria-label="Nota yang sedang dibuat">
+        <div class="card side-card">
+          <div class="tabs" role="tablist" aria-label="Tampilan nota">
+            <button id="tab-lines" class="tab" role="tab" aria-selected="true" aria-controls="panel-lines" type="button">Rincian</button>
+            <button id="tab-preview" class="tab" role="tab" aria-selected="false" aria-controls="panel-preview" tabindex="-1" type="button">Pratinjau</button>
+          </div>
+
+          <div id="panel-lines" role="tabpanel" aria-labelledby="tab-lines">
+            <p id="linesEmpty" class="empty">Belum ada barang. Cari di katalog, lalu tekan Tambah.</p>
+            <ul id="lines" class="lines"></ul>
+            <dl class="totals">
+              <div class="trow"><dt>Sub total</dt><dd id="t-sub" class="mono">0</dd></div>
+              <div class="trow"><dt><label for="f-disc">Diskon (Rp)</label></dt><dd><input id="f-disc" class="money" type="text" inputmode="numeric" value="0" /></dd></div>
+              <div class="trow grand"><dt>Total</dt><dd id="t-total" class="mono">Rp 0</dd></div>
+              <div class="trow" id="cashRow"><dt><label for="f-paid">Uang diterima</label></dt><dd><input id="f-paid" class="money" type="text" inputmode="numeric" value="0" /></dd></div>
+              <div class="trow" id="changeRow"><dt id="changeLabel">Kembalian</dt><dd id="t-change" class="mono">Rp 0</dd></div>
+            </dl>
+          </div>
+
+          <div id="panel-preview" role="tabpanel" aria-labelledby="tab-preview" hidden>
+            <div id="previewPaper" class="paper-wrap"></div>
+          </div>
+
+          <div id="formErrors" class="errors" role="alert" hidden></div>
+          <div class="actions">
+            <button id="btnPrint" type="button" class="btn primary wide">Cetak</button>
+            <button id="btnDraft" type="button" class="btn">Simpan draf</button>
+            <button id="btnPng" type="button" class="btn">Unduh gambar</button>
+            <button id="btnWa" type="button" class="btn">Kirim ringkasan WA</button>
+            <button id="btnReset" type="button" class="btn quiet">Reset</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Riwayat Nota -->
+  <section id="view-riwayat" class="view" aria-labelledby="h-riwayat" hidden>
+    <div class="page-head">
+      <div>
+        <h1 id="h-riwayat">Riwayat Nota</h1>
+        <p class="lede">Arsip nota yang tersimpan, cetak ulang, dan rekap per periode.</p>
+      </div>
+      <div class="head-actions">
+        <button id="btnCsv" type="button" class="btn">Ekspor CSV</button>
+        <a class="btn primary" href="#buat">Buat nota baru</a>
+      </div>
+    </div>
+
+    <dl id="summary" class="summary"></dl>
+
+    <div class="card">
+      <div class="filters">
+        <div class="field"><label for="r-range">Periode</label>
+          <select id="r-range">
+            <option value="today">Hari ini</option>
+            <option value="yesterday">Kemarin</option>
+            <option value="7d">7 hari terakhir</option>
+            <option value="month">Bulan ini</option>
+            <option value="all">Semua</option>
+          </select>
+        </div>
+        <div class="field"><label for="r-sales">Sales</label><select id="r-sales"></select></div>
+        <div class="field"><label for="r-pay">Metode</label><select id="r-pay"></select></div>
+        <div class="field"><label for="r-status">Status</label>
+          <select id="r-status">
+            <option value="">Semua status</option>
+            <option value="lunas">Lunas</option>
+            <option value="draft">Draf</option>
+            <option value="batal">Batal</option>
+          </select>
+        </div>
+        <div class="field grow"><label for="r-q">Cari nomor, pelanggan, barang, SN</label><input id="r-q" type="search" autocomplete="off" /></div>
+      </div>
+      <div class="table-scroll">
+        <table class="table" id="histTable">
+          <thead>
+            <tr><th>No. nota</th><th>Waktu</th><th>Sales</th><th>Barang</th><th>Metode</th><th class="num">Total</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr>
+          </thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <p id="histEmpty" class="empty" hidden></p>
+    </div>
+  </section>
+
+  <!-- Pengaturan -->
+  <section id="view-pengaturan" class="view" aria-labelledby="h-set" hidden>
+    <div class="page-head">
+      <div>
+        <h1 id="h-set">Pengaturan</h1>
+        <p class="lede">Nama kasir di kop nota, daftar sales untuk pilihan di nota, dan data aplikasi.</p>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="card-head"><h2>Kasir perangkat ini</h2></div>
+        <div class="inline-form">
+          <div class="field grow"><label for="s-kasir">Nama kasir atau terminal di nota</label><input id="s-kasir" type="text" autocomplete="off" /></div>
+          <button id="btnKasir" type="button" class="btn primary">Simpan</button>
+        </div>
+        <p class="hint">Tersimpan di perangkat ini saja, jadi tiap meja kasir bisa memakai nama sendiri.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2 id="salesFormTitle">Tambah sales</h2></div>
+        <div class="fields">
+          <div class="field"><label for="sl-code">Kode sales</label><input id="sl-code" type="text" autocomplete="off" placeholder="FL.SDNC.01" /></div>
+          <div class="field"><label for="sl-name">Nama lengkap</label><input id="sl-name" type="text" autocomplete="off" /></div>
+          <div class="field"><label for="sl-phone">No. WhatsApp</label><input id="sl-phone" type="tel" inputmode="tel" autocomplete="off" /></div>
+          <div class="field"><label for="sl-branch">Cabang atau loket</label><input id="sl-branch" type="text" autocomplete="off" /></div>
+        </div>
+        <label class="check"><input id="sl-active" type="checkbox" checked /> Tampil di pilihan sales pada nota</label>
+        <div id="salesError" class="errors" role="alert" hidden></div>
+        <div class="actions">
+          <button id="btnSalesSave" type="button" class="btn primary">Simpan sales</button>
+          <button id="btnSalesReset" type="button" class="btn quiet">Reset form</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Daftar sales</h2><span id="salesCount" class="mono muted"></span></div>
+        <div class="filters">
+          <div class="field grow"><label for="sl-q">Cari kode atau nama</label><input id="sl-q" type="search" autocomplete="off" /></div>
+          <div class="field"><label for="sl-filter">Tampilkan</label>
+            <select id="sl-filter">
+              <option value="all">Semua</option>
+              <option value="active">Aktif saja</option>
+              <option value="inactive">Nonaktif saja</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table class="table">
+            <thead><tr><th>Kode</th><th>Nama</th><th>WhatsApp</th><th>Cabang</th><th class="num">Nota lunas</th><th>Status</th><th><span class="sr-only">Aksi</span></th></tr></thead>
+            <tbody id="salesBody"></tbody>
+          </table>
+        </div>
+        <p id="salesEmpty" class="empty" hidden></p>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h2>Data aplikasi</h2></div>
+        <dl class="kv">
+          <div><dt>Penyimpanan nota</dt><dd id="d-store"></dd></div>
+          <div><dt>Katalog</dt><dd id="d-catalog"></dd></div>
+        </dl>
+        <div class="actions">
+          <button id="btnReload" type="button" class="btn">Muat ulang katalog</button>
+          <button id="btnBackup" type="button" class="btn">Unduh cadangan nota (JSON)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog id="notaDialog" class="dialog" aria-labelledby="dlgTitle">
+  <div class="dialog-head">
+    <h2 id="dlgTitle">Nota</h2>
+    <button id="dlgClose" type="button" class="btn quiet">Tutup</button>
+  </div>
+  <div id="dlgPaper" class="paper-wrap"></div>
+  <div class="actions" id="dlgActions"></div>
+</dialog>
+
+<div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+<div id="printArea" aria-hidden="true"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<script src="js/config.js?v=1"></script>
+<script src="js/helpers.js?v=1"></script>
+<script src="js/catalog-source.js?v=1"></script>
+<script src="js/nota-model.js?v=1"></script>
+<script src="js/store.js?v=1"></script>
+<script src="js/receipt.js?v=1"></script>
+<script src="js/app.js?v=1"></script>
+<script src="js/view-buat.js?v=1"></script>
+<script src="js/view-riwayat.js?v=1"></script>
+<script src="js/view-pengaturan.js?v=1"></script>
+<script src="js/main.js?v=1"></script>
+</body>
+</html>
