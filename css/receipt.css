@@ -1,0 +1,47 @@
+.paper-wrap { display: flex; justify-content: center; padding: 4px 0 8px; overflow-x: auto; }
+
+/* Kertas thermal 80 mm (302 px). Bayangan dan ujung bergerigi: kertas terangkat dari halaman. */
+.receipt {
+  position: relative; width: 302px; flex: none; background: #fff; color: #000;
+  font: 400 11px/15px var(--mono, ui-monospace, Menlo, Consolas, monospace); padding: 14px 12px 22px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+  --teeth: 7px;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(var(--teeth) * 2) 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(var(--teeth) * 2) 100%;
+  padding-bottom: calc(22px + var(--teeth));
+}
+.receipt div { overflow-wrap: anywhere; }
+.r-head { text-align: center; padding-bottom: 8px; border-bottom: 1px dashed #000; }
+.r-brand { font-size: 18px; line-height: 24px; font-weight: 700; letter-spacing: 0.02em; }
+.r-pay { font-weight: 700; }
+.r-meta { padding: 6px 0; border-bottom: 1px dashed #000; }
+.r-row { display: flex; justify-content: space-between; gap: 8px; }
+.r-no { text-align: center; font-size: 14px; line-height: 20px; font-weight: 700; padding: 6px 0 4px; }
+.r-items { width: 100%; border-collapse: collapse; margin-top: 2px; }
+.r-items th { text-align: left; font-weight: 500; padding: 3px 0; border-top: 1px dashed #000; border-bottom: 1px dashed #000; }
+.r-items th:nth-child(n + 2) { text-align: right; }
+.r-items td { padding: 4px 0 2px; vertical-align: top; }
+.r-items .r-qty, .r-items .r-num { text-align: right; padding-left: 6px; white-space: nowrap; }
+.r-items .r-desc { width: 100%; }
+.r-sub { padding-left: 14px; }
+.r-empty { text-align: center; padding: 12px 0; color: #555; }
+.r-foot { border-top: 1px dashed #000; margin-top: 4px; padding: 6px 0; }
+.r-sum { border-top: 1px dashed #000; padding-top: 6px; }
+.r-total { font-size: 13px; line-height: 20px; font-weight: 700; }
+.r-note { text-align: center; margin-top: 10px; font-size: 10px; line-height: 14px; }
+.r-sign { display: flex; justify-content: space-between; margin: 10px 0 44px; font-size: 10px; text-align: center; gap: 6px; }
+.r-print { text-align: center; font-size: 10px; color: #444; margin-top: 8px; }
+.r-void { text-align: center; font-weight: 700; font-size: 14px; letter-spacing: 0.08em; border: 2px solid #000; padding: 2px 0; margin-bottom: 8px; }
+
+/* Wadah di luar layar untuk html2canvas: tidak terlihat, tapi tetap dirender pada lebar penuh. */
+.png-holder { position: fixed; left: -10000px; top: 0; width: 302px; background: #fff; }
+.png-holder .receipt { -webkit-mask: none; mask: none; box-shadow: none; padding-bottom: 22px; }
+
+#printArea { display: none; }
+@media print {
+  @page { size: 80mm auto; margin: 0; }
+  body > *:not(#printArea) { display: none !important; }
+  #printArea { display: block; }
+  #printArea .receipt { width: 80mm; box-shadow: none; -webkit-mask: none; mask: none; padding: 4mm 4mm 8mm; }
+  body { background: #fff; }
+}
