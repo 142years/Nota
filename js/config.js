@@ -7,7 +7,7 @@ const SUPABASE_KEY =
 // Tempat nota dan daftar sales disimpan.
 //   'local'    = di browser perangkat ini (jalan tanpa setup, tidak ikut pindah perangkat)
 //   'supabase' = tabel nota dan sales_users (jalankan supabase/schema.sql dulu)
-const STORE_BACKEND = 'local';
+const STORE_BACKEND = 'supabase';
 
 // Kop nota. Teks diambil dari desain Stitch; sesuaikan bila ada yang berbeda dengan nota SAP.
 const COMPANY = {
