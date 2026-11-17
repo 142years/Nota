@@ -4,6 +4,7 @@
 
   const ctx = () => ({ sales: App.sales, now: new Date() });
   const receiptOf = () => renderReceiptHtml(withKasir(App.nota), ctx());
+  const moneyStr = (n) => (n ? fmtNum(n) : '');
   const withKasir = (n) => Object.assign({}, n, { kasir: n.kasir || Settings.kasir });
 
   function resetNota() {
@@ -136,8 +137,10 @@
           `<div class="mono muted">${l.custom ? 'Item kustom' : escapeHtml(l.code)}</div></div>` +
           `<button class="btn quiet small" type="button" data-del="${l.id}" aria-label="Hapus ${escapeHtml(l.desc)} dari nota">Hapus</button></div>` +
           `<div class="line-grid"><div class="field"><label for="q-${l.id}">Qty</label><input id="q-${l.id}" type="number" min="1" step="1" value="${l.qty}" data-qty="${l.id}"${l.hasSn ? ' disabled' : ''} /></div>` +
-          `<div class="field"><label for="p-${l.id}">Harga satuan</label><input id="p-${l.id}" class="money mono" type="text" inputmode="numeric" value="${fmtNum(l.price)}" data-price="${l.id}" /></div>` +
-          `<div class="line-sub mono" data-sub="${l.id}">${fmtNum(lineTotal(l))}</div></div>${snField(l)}${warn}</li>`
+          `<div class="field"><label for="p-${l.id}">${l.custom ? 'Harga satuan' : 'Harga katalog'}</label><input id="p-${l.id}" class="money mono" type="text" inputmode="numeric" placeholder="0" value="${moneyStr(l.price)}" data-price="${l.id}" /></div>` +
+          `<div class="line-sub mono" data-sub="${l.id}">${fmtNum(lineTotal(l))}</div></div>` +
+          `<div class="field"><label for="s-${l.id}">Harga akhir per unit (setelah potongan)</label><input id="s-${l.id}" class="money mono" type="text" inputmode="numeric" placeholder="${l.price ? fmtNum(l.price) : '0'}" value="${l.sell === null || l.sell === undefined ? '' : fmtNum(l.sell)}" data-sell="${l.id}" /></div>` +
+          `<div class="line-disc" data-disc="${l.id}"></div>${snField(l)}${warn}</li>`
         );
       })
       .join('');
@@ -148,6 +151,8 @@
     const t = totals(n);
     $('t-sub').textContent = fmtNum(t.subtotal);
     $('t-total').textContent = fmtRupiah(t.total);
+    $('lineDiscRow').hidden = t.lineDisc === 0;
+    $('t-linedisc').textContent = '-' + fmtNum(t.lineDisc);
     $('cashRow').hidden = !t.isCash;
     $('changeRow').hidden = !t.isCash;
     $('changeLabel').textContent = t.short > 0 && t.paid > 0 ? 'Kurang' : 'Kembalian';
@@ -158,6 +163,14 @@
     n.lines.forEach((l) => {
       const el = document.querySelector(`[data-sub="${l.id}"]`);
       if (el) el.textContent = fmtNum(lineTotal(l));
+      const dEl = document.querySelector(`[data-disc="${l.id}"]`);
+      if (dEl) {
+        const d = lineDiscount(l);
+        const over = l.sell !== null && l.sell !== undefined && Number(l.sell) > Number(l.price);
+        dEl.hidden = !d && !over;
+        dEl.className = 'line-disc' + (over ? ' bad' : '');
+        dEl.textContent = over ? 'Harga akhir lebih tinggi dari harga katalog.' : `Potongan ${fmtRupiah(d)} (${fmtNum(l.qty)} x ${fmtNum(Number(l.price) - Number(l.sell))})`;
+      }
     });
     if (ui.tab === 'preview') $('previewPaper').innerHTML = receiptOf();
   }
@@ -166,8 +179,8 @@
     renderHead();
     renderLines();
     renderTotals();
-    $('f-disc').value = fmtNum(App.nota.discount);
-    $('f-paid').value = fmtNum(App.nota.paid);
+    $('f-disc').value = moneyStr(App.nota.discount);
+    $('f-paid').value = moneyStr(App.nota.paid);
   }
 
   function setTab(name) {
@@ -334,7 +347,7 @@
       addCustomLine(App.nota, desc, $('c-qty').value, parseMoney($('c-price').value));
       $('c-desc').value = '';
       $('c-qty').value = '1';
-      $('c-price').value = '0';
+      $('c-price').value = '';
       showErrors([]);
       renderLines();
       renderTotals();
@@ -363,7 +376,20 @@
     });
 
     $('view-buat').addEventListener('focusout', (e) => {
-      if (e.target.classList && e.target.classList.contains('money')) e.target.value = fmtNum(parseMoney(e.target.value));
+      if (e.target.classList && e.target.classList.contains('money')) e.target.value = moneyStr(parseMoney(e.target.value));
+    });
+    // Pilih seluruh isi saat fokus: angka baru langsung menimpa, tanpa menghapus dulu.
+    // mouseup ditahan sekali supaya klik tidak membatalkan seleksi.
+    let justFocused = false;
+    const isMoney = (el) => el.classList && el.classList.contains('money');
+    $('view-buat').addEventListener('focusin', (e) => {
+      if (!isMoney(e.target)) return;
+      justFocused = true;
+      e.target.select();
+    });
+    $('view-buat').addEventListener('mouseup', (e) => {
+      if (isMoney(e.target) && justFocused) e.preventDefault();
+      justFocused = false;
     });
 
     const lines = $('lines');
@@ -375,6 +401,9 @@
         renderTotals();
       } else if (t.dataset.price) {
         line(t.dataset.price).price = parseMoney(t.value);
+        renderTotals();
+      } else if (t.dataset.sell) {
+        line(t.dataset.sell).sell = t.value.trim() === '' ? null : parseMoney(t.value);
         renderTotals();
       } else if (t.dataset.snfree) {
         line(t.dataset.snfree).sn = t.value.trim();
@@ -414,6 +443,7 @@
     App.on('catalog', () => {
       renderCatalog();
       renderLines();
+      renderTotals();
     });
     App.on('data', () => {
       if (!$('view-buat').hidden) renderHead();

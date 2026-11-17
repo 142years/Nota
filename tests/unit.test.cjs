@@ -82,6 +82,24 @@ test('total, diskon dibatasi, kembalian dan kurang (tunai)', () => {
   t = model.totals(n);
   assert.deepEqual([t.paid, t.short, t.isCash], [250000, 0, false]);
 });
+test('potongan per barang: harga akhir diketik, katalog tetap, diakumulasi ke Disc', () => {
+  const n = model.newNota();
+  const l1 = model.addProductLine(n, by('ACC.ANK.CH00001'));
+  l1.qty = 2;
+  l1.sell = 230000;
+  const l2 = model.addProductLine(n, by('GAD.OPO.HP00123'));
+  assert.equal(model.lineDiscount(l1), 20000);
+  assert.equal(model.lineDiscount(l2), 0);
+  n.discount = 5000;
+  const t = model.totals(n);
+  assert.deepEqual([t.subtotal, t.lineDisc, t.extra, t.discount, t.total], [480000 + 7999000, 20000, 5000, 25000, 480000 + 7999000 - 25000]);
+  assert.equal(model.lineTotal(l1), 480000, 'total baris tetap harga katalog');
+  l1.sell = 999999;
+  assert.equal(model.lineDiscount(l1), 0);
+  n.salesCode = 'FL.1';
+  n.paid = 99999999;
+  assert.ok(model.validateForPrint(n).some((e) => e.includes('lebih tinggi dari harga katalog')));
+});
 test('HP: satu baris per unit dengan SN FIFO; aksesoris digabung', () => {
   const n = model.newNota();
   const hp = by('GAD.OPO.HP00123');

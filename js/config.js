@@ -7,7 +7,7 @@ const SUPABASE_KEY =
 // Tempat nota dan daftar sales disimpan.
 //   'local'    = di browser perangkat ini (jalan tanpa setup, tidak ikut pindah perangkat)
 //   'supabase' = tabel nota dan sales_users (jalankan supabase/schema.sql dulu)
-const STORE_BACKEND = 'supabase';
+const STORE_BACKEND = 'local';
 
 // Kop nota. Teks diambil dari desain Stitch; sesuaikan bila ada yang berbeda dengan nota SAP.
 const COMPANY = {
@@ -21,11 +21,11 @@ const COMPANY = {
 };
 
 const PAYMENT_METHODS = [
-  { id: 'tunai', label: 'Cash / Tunai', cash: true },
+  { id: 'tunai', label: 'Tunai', cash: true },
   { id: 'qris', label: 'QRIS BCA' },
   { id: 'debit', label: 'Debit BCA / EDC' },
   { id: 'transfer', label: 'Transfer Bank' },
-  { id: 'kredit', label: 'Kredit' },
+  { id: 'tempo', label: 'Tempo / Piutang' },
 ];
 
 // Samakan dengan Stok-Gudang-SDNC/js/stock-config.js. Gudang sendiri dihitung sebagai stok ready.

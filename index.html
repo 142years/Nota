@@ -76,7 +76,7 @@
           <div id="customBox" class="custom-box" hidden>
             <div class="field grow"><label for="c-desc">Nama barang</label><input id="c-desc" type="text" autocomplete="off" /></div>
             <div class="field narrow"><label for="c-qty">Qty</label><input id="c-qty" type="number" min="1" step="1" value="1" /></div>
-            <div class="field"><label for="c-price">Harga satuan</label><input id="c-price" type="text" inputmode="numeric" value="0" /></div>
+            <div class="field"><label for="c-price">Harga satuan</label><input id="c-price" class="money" type="text" inputmode="numeric" placeholder="0" /></div>
             <button id="btnCustomAdd" type="button" class="btn primary">Tambah</button>
           </div>
           <div class="filter-row">
@@ -99,9 +99,10 @@
             <ul id="lines" class="lines"></ul>
             <dl class="totals">
               <div class="trow"><dt>Sub total</dt><dd id="t-sub" class="mono">0</dd></div>
-              <div class="trow"><dt><label for="f-disc">Diskon (Rp)</label></dt><dd><input id="f-disc" class="money" type="text" inputmode="numeric" value="0" /></dd></div>
+              <div class="trow" id="lineDiscRow" hidden><dt>Potongan per barang</dt><dd id="t-linedisc" class="mono">0</dd></div>
+              <div class="trow"><dt><label for="f-disc">Potongan tambahan (Rp)</label></dt><dd><input id="f-disc" class="money" type="text" inputmode="numeric" placeholder="0" /></dd></div>
               <div class="trow grand"><dt>Total</dt><dd id="t-total" class="mono">Rp 0</dd></div>
-              <div class="trow" id="cashRow"><dt><label for="f-paid">Uang diterima</label></dt><dd><input id="f-paid" class="money" type="text" inputmode="numeric" value="0" /></dd></div>
+              <div class="trow" id="cashRow"><dt><label for="f-paid">Uang diterima</label></dt><dd><input id="f-paid" class="money" type="text" inputmode="numeric" placeholder="0" /></dd></div>
               <div class="trow" id="changeRow"><dt id="changeLabel">Kembalian</dt><dd id="t-change" class="mono">Rp 0</dd></div>
             </dl>
           </div>

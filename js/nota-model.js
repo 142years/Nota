@@ -26,14 +26,22 @@ function lineTotal(l) {
   return Math.round((Number(l.qty) || 0) * (Number(l.price) || 0));
 }
 
+// Potongan per baris = (harga katalog - harga akhir yang diketik) x qty. Kosong (null) = tanpa potongan.
+function lineDiscount(l) {
+  if (l.sell === null || l.sell === undefined) return 0;
+  return Math.round(Math.max((Number(l.price) || 0) - (Number(l.sell) || 0), 0) * (Number(l.qty) || 0));
+}
+
 function totals(n) {
   const subtotal = n.lines.reduce((s, l) => s + lineTotal(l), 0);
-  const discount = Math.min(Math.max(Math.round(Number(n.discount) || 0), 0), subtotal);
+  const lineDisc = Math.min(n.lines.reduce((s, l) => s + lineDiscount(l), 0), subtotal);
+  const extra = Math.min(Math.max(Math.round(Number(n.discount) || 0), 0), subtotal - lineDisc);
+  const discount = lineDisc + extra;
   const total = subtotal - discount;
   const qty = n.lines.reduce((s, l) => s + (Number(l.qty) || 0), 0);
   const isCash = (PAYMENT_METHODS.find((m) => m.id === n.payment) || {}).cash;
   const paid = isCash ? Math.round(Number(n.paid) || 0) : total;
-  return { subtotal, discount, total, qty, paid, change: Math.max(paid - total, 0), short: Math.max(total - paid, 0), isCash: !!isCash };
+  return { subtotal, lineDisc, extra, discount, total, qty, paid, change: Math.max(paid - total, 0), short: Math.max(total - paid, 0), isCash: !!isCash };
 }
 
 // SN yang belum dipakai baris lain di nota ini, urut FIFO.
@@ -47,7 +55,7 @@ function addProductLine(n, product, serial) {
   if (product.units.length) {
     const free = freeSerials(n, product);
     const sn = serial && free.some((u) => u.serial === serial) ? serial : free[0] ? free[0].serial : '';
-    n.lines.push({ id: uid(), code: product.code, desc: product.desc, qty: 1, price: product.price || 0, sn, hasSn: true, priceKnown: product.price !== null, custom: false });
+    n.lines.push({ id: uid(), code: product.code, desc: product.desc, qty: 1, price: product.price || 0, sn, hasSn: true, priceKnown: product.price !== null, custom: false, sell: null });
     return n.lines[n.lines.length - 1];
   }
   const same = n.lines.find((l) => l.code === product.code && !l.custom);
@@ -55,12 +63,12 @@ function addProductLine(n, product, serial) {
     same.qty = (Number(same.qty) || 0) + 1;
     return same;
   }
-  n.lines.push({ id: uid(), code: product.code, desc: product.desc, qty: 1, price: product.price || 0, sn: '', hasSn: false, priceKnown: product.price !== null, custom: false });
+  n.lines.push({ id: uid(), code: product.code, desc: product.desc, qty: 1, price: product.price || 0, sn: '', hasSn: false, priceKnown: product.price !== null, custom: false, sell: null });
   return n.lines[n.lines.length - 1];
 }
 
 function addCustomLine(n, desc, qty, price) {
-  n.lines.push({ id: uid(), code: '', desc: String(desc).trim(), qty: Number(qty) || 1, price: Math.max(Math.round(Number(price) || 0), 0), sn: '', hasSn: false, priceKnown: true, custom: true });
+  n.lines.push({ id: uid(), code: '', desc: String(desc).trim(), qty: Number(qty) || 1, price: Math.max(Math.round(Number(price) || 0), 0), sn: '', hasSn: false, priceKnown: true, custom: true, sell: null });
   return n.lines[n.lines.length - 1];
 }
 
@@ -86,6 +94,7 @@ function validateForPrint(n) {
     if (!(Number(l.qty) > 0)) errs.push(`Jumlah "${name}" harus lebih dari 0.`);
     if (!String(l.desc).trim()) errs.push(`Nama barang baris ${i + 1} kosong.`);
     if (l.hasSn && !l.sn) errs.push(`SN "${name}" belum diisi.`);
+    if (l.sell !== null && l.sell !== undefined && Number(l.sell) > Number(l.price)) errs.push(`Harga akhir "${name}" lebih tinggi dari harga katalog.`);
   });
   const sns = n.lines.filter((l) => l.sn).map((l) => l.sn);
   if (new Set(sns).size !== sns.length) errs.push('Ada SN yang sama di dua baris.');
@@ -95,5 +104,5 @@ function validateForPrint(n) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { newNota, lineTotal, totals, freeSerials, addProductLine, addCustomLine, nextNotaNo, validateForPrint, uid };
+  module.exports = { newNota, lineTotal, lineDiscount, totals, freeSerials, addProductLine, addCustomLine, nextNotaNo, validateForPrint, uid };
 }

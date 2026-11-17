@@ -171,6 +171,8 @@ input:disabled, select:disabled { background: var(--fill); color: var(--ink-2); 
 .line-desc { font-weight: 600; overflow-wrap: anywhere; }
 .line-grid { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; gap: 8px; align-items: end; }
 .line-sub { font-weight: 500; text-align: right; padding-bottom: 10px; white-space: nowrap; }
+.line-disc { font-size: 12px; line-height: 16px; color: var(--ok); }
+.line-disc.bad { color: var(--err); }
 .line-warn { font-size: 12px; line-height: 16px; color: var(--warn); background: var(--warn-bg); padding: 4px 8px; border-radius: var(--r-ctl); }
 .line .field label { font-size: 11px; }
 .line input, .line select { min-height: 36px; padding: 4px 8px; }
