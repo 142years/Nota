@@ -5,6 +5,6 @@ Pembuat nota kasir Gadgetmart. Katalog barang, harga, stok, dan SN dibaca dari S
 Web statis tanpa build: buka `index.html` atau pasang di GitHub Pages.
 
 - Pengaturan kop nota, metode bayar, dan gudang: `js/config.js`
-- Nota dan sales disimpan di browser (`STORE_BACKEND = 'local'`). Untuk dipakai bersama banyak perangkat, jalankan `supabase/schema.sql` lalu ubah menjadi `'supabase'`.
+- Nota dan sales disimpan di Supabase (`STORE_BACKEND = 'supabase'`, jalankan `supabase/schema.sql` sekali). Mode `'local'` menyimpan di browser perangkat saja.
 - Arah desain: `DESIGN.md`
 - Uji: `node --test tests/unit.test.cjs`, dan `node tests/e2e.mjs` (butuh Playwright + Chromium)

@@ -6,8 +6,10 @@
     window.NOTA_TEST_FETCH ||
     (client ? supabaseFetcher(client) : async () => ({ ok: false, payload: null, message: 'supabase-js tidak termuat' }));
 
-  App.store = STORE_BACKEND === 'supabase' && client ? createSupabaseStore(client) : createLocalStore();
-  if (STORE_BACKEND === 'supabase' && !client) toast('Supabase tidak termuat, nota disimpan di perangkat ini.', true);
+  // Uji otomatis (NOTA_TEST_FETCH) selalu memakai penyimpanan lokal.
+  const backend = window.NOTA_TEST_FETCH ? 'local' : STORE_BACKEND;
+  App.store = backend === 'supabase' && client ? createSupabaseStore(client) : createLocalStore();
+  if (backend === 'supabase' && !client) toast('Supabase tidak termuat, nota disimpan di perangkat ini.', true);
 
   Object.keys(App.views).forEach((k) => App.views[k].init());
   window.addEventListener('hashchange', App.route);

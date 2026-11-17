@@ -5,8 +5,9 @@ const SUPABASE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im16Z2lldWNkZGJwbHlqc2JrbGVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwNzA4OTQsImV4cCI6MjEwNTY0Njg5NH0.Gw4UWJLaIr7_FPaJbbpXoSW9jQBfB4mAG1aMZ5BKFyo';
 
 // Tempat nota dan daftar sales disimpan.
-//   'local'    = di browser perangkat ini (jalan tanpa setup, tidak ikut pindah perangkat)
 //   'supabase' = tabel nota dan sales_users (jalankan supabase/schema.sql dulu)
+//   'local'    = di browser perangkat ini (jalan tanpa setup, tidak ikut pindah perangkat)
+// Jangan ubah ke 'local' kecuali sengaja: nota di mode berbeda tidak saling terlihat.
 const STORE_BACKEND = 'supabase';
 
 // Kop nota. Teks diambil dari desain Stitch; sesuaikan bila ada yang berbeda dengan nota SAP.
